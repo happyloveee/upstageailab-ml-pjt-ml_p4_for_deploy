@@ -18,4 +18,5 @@ tqdm==4.65.0
 boto3==1.26.137
 emoji==2.2.0
 streamlit-option-menu==0.3.6
+pytorch-lightning==1.9.5
 git+https://github.com/SKTBrain/KoBERT.git@master
