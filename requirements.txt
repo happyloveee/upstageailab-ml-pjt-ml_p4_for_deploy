@@ -16,3 +16,7 @@ keras==2.15.0
 sentencepiece==0.1.99
 tokenizers==0.15.1
 tqdm==4.66.1
+kobert-tokenizer
+boto3
+emoji
+streamlit-option-menu
