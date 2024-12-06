@@ -5,7 +5,7 @@ numpy==1.23.5
 requests==2.31.0
 torch==1.13.1
 torchvision==0.14.1
-transformers==4.31.0
+transformers==4.8.1
 streamlit-chat==0.1.1
 python-dotenv==1.0.0
 scikit-learn==1.0.2
@@ -18,3 +18,4 @@ tqdm==4.65.0
 boto3==1.26.137
 emoji==2.2.0
 streamlit-option-menu==0.3.6
+git+https://github.com/SKTBrain/KoBERT.git@master
