@@ -4,9 +4,15 @@ pandas==2.2.0
 numpy==1.26.3
 requests==2.31.0
 torch==2.1.2
+torchvision==0.16.2
 transformers==4.37.2
 streamlit-chat==0.1.1
 python-dotenv==1.0.0
 scikit-learn==1.4.0
 mlflow==2.10.0
 protobuf==4.25.2
+tensorflow==2.15.0
+keras==2.15.0
+sentencepiece==0.1.99
+tokenizers==0.15.1
+tqdm==4.66.1
