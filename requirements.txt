@@ -16,7 +16,7 @@ keras==2.13.1
 sentencepiece==0.1.99
 tokenizers==0.13.3
 tqdm==4.65.0
-boto3==1.28.36
+boto3<=1.15.18
 emoji==2.8.0
 streamlit-option-menu==0.3.6
 git+https://git@github.com/SKTBrain/KoBERT.git@master
