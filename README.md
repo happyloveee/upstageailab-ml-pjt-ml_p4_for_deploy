@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # MLOps 프로젝트: 비정제 한국어 데이터 수집 및 감성 분석
 
 ## 1. 프로젝트 개요
@@ -436,3 +437,6 @@ Airflow 초기 설정 시 다음 기본 계정이 자동으로 생성:
 - **FastAPI 문서**: [FastAPI](https://fastapi.tiangolo.com/)
 ### 8.6 배포
 - **Airflow 문서**: [Airflow](https://airflow.apache.org/)
+=======
+# upstageailab-ml-pjt-ml_p4_for_deploy
+>>>>>>> 4b8a98945dbcdba600380e564364e6a243369ce3
