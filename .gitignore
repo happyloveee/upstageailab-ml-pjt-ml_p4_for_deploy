@@ -10,7 +10,7 @@ backup/
 !/src/data
 
 mlruns/
-mlartifacts/
+# mlartifacts/
 lightning_logs/
 
 .cursorrules
@@ -258,7 +258,7 @@ weights/
 
 # MLflow related
 mlruns/
-mlartifacts/
+# mlartifacts/
 outputs/
 
 # Logs and cache
