@@ -8,6 +8,8 @@ mlflow:
   model_info_path: "config/model_registry.json"
   artifact_location: "mlartifacts"
   server_config:
+    host: "127.0.0.1"  # 추가
+    port: 5050        # 추가
     workers: 4
     request_header_size: 65536
     default_artifact_root: "mlartifacts"
