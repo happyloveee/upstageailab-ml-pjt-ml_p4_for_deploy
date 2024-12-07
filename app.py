@@ -49,6 +49,12 @@ def start_mlflow_server(config):
     ]
     subprocess.Popen(mlflow_command)
 
+    # 앱 시작시 MLflow 서버 실행
+if 'mlflow_server_started' not in st.session_state:
+    start_mlflow_server()
+    st.session_state.mlflow_server_started = True
+
+
 #Part 2/4 - 유틸리티 함수들:
 # query 함수 수정
 

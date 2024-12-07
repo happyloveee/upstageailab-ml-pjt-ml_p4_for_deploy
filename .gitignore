@@ -258,6 +258,7 @@ weights/
 
 # MLflow related
 mlruns/
+mlruns.db# 추가
 # mlartifacts/
 outputs/
 

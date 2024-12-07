@@ -12,7 +12,7 @@ pyyaml
 emoji
 
 optuna
-mlflow
+mlflow>=2.0.0
 
 ruff
 black
@@ -29,3 +29,7 @@ plotly
 slack-sdk
 python-dotenv
 streamlit-chat
+
+transformers
+pandas
+numpy
