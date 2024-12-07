@@ -1,15 +1,19 @@
-import streamlit as st
+
 from src.config import Config
 from src.utils.mlflow_utils import MLflowModelManager
 from src.inference import SentimentPredictor
+import subprocess
+
+
+import streamlit as st
 import pandas as pd
 from datetime import datetime
 import plotly.graph_objects as go
+import plotly.express as px #추가
 import time
 import logging# 추가
 import torch #추가
 import requests #추가
-import plotly.express as px #추가
 import numpy as np #추가
 from streamlit_chat import message  #추가
 import streamlit as st
@@ -33,6 +37,17 @@ except Exception as e:
     st.error("Hugging Face API 토큰이 설정되지 않았습니다. Streamlit Cloud의 Settings에서 'HUGGINGFACE_TOKEN'을 설정해주세요.")
     headers = {"Authorization": "Bearer "}
 
+#추가 
+def start_mlflow_server(config):
+    """MLflow 서버 시작"""
+    mlflow_command = [
+        "mlflow", "server",
+        "--backend-store-uri", f"sqlite:///{config.mlflow.backend_store_uri}",
+        "--default-artifact-root", f"{config.mlflow.artifact_location}",
+        "--host", "0.0.0.0",
+        "--port", "5050"  # 5000에서 5050으로 변경
+    ]
+    subprocess.Popen(mlflow_command)
 
 #Part 2/4 - 유틸리티 함수들:
 # query 함수 수정
