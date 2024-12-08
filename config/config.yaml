@@ -7,10 +7,10 @@ mlflow: #수정
 # mlflow:
 #   tracking_uri: "http://127.0.0.1:5050"
 #   experiment_name: "ml4_sentiment_analysis"
-  model_registry_metric_threshold: 0.3
+  model_registry_metric_threshold: 0.7 #0.3
   mlrun_path: "mlruns"
   backend_store_uri: "mlruns"
-  model_info_path: "config/model_registry.json"
+  model_info_path: "model_registry.json" #"config/model_registry.json"
   artifact_location: "mlartifacts"
   server_config:
     host: "127.0.0.1"  # 추가

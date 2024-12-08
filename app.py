@@ -21,6 +21,9 @@ import csv# 추가
 from io import StringIO#추가
 import random
 import os #추가
+from pathlib import Path    #추가
+
+
 logging.basicConfig(level=logging.INFO)
 
 
@@ -492,16 +495,25 @@ def display_model_management(model_manager, model_name: str):
 def initialize_mlflow():
     """MLflow 초기화"""
     try:
-        config = Config()
-        
-        # MLflow 설정
-        mlflow.set_tracking_uri(config.mlflow.tracking_uri)
-        mlflow.set_experiment(config.mlflow.experiment_name)
+        # 현재 디렉토리에 mlruns 폴더 사용
+        db_dir = Path.cwd() / "mlruns"
+        db_path = db_dir / "mlflow.db"
+        artifact_dir = db_dir / "mlartifacts"
         
         # 디렉토리 생성
-        os.makedirs("/data/ephemeral/mlartifacts", exist_ok=True)
+        os.makedirs(db_dir, exist_ok=True)
+        os.makedirs(artifact_dir, exist_ok=True)
         
+        # SQLite URI 설정
+        sqlite_uri = f"sqlite:///{db_path.absolute()}"
+        
+        # MLflow 설정
+        mlflow.set_tracking_uri(sqlite_uri)
+        mlflow.set_experiment("sentiment-analysis")
+        
+        st.success("MLflow 초기화 성공!")
         return True
+        
     except Exception as e:
         st.error(f"MLflow 초기화 실패: {str(e)}")
         return False
