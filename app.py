@@ -11,8 +11,7 @@ from src.utils.mlflow_utils import MLflowModelManager
 from src.inference import SentimentPredictor
 
 
-import mlflow
-from mlflow.tracking import MlflowClient
+
 import pandas as pd
 from datetime import datetime
 import plotly.graph_objects as go
@@ -500,6 +499,7 @@ def display_model_management(model_manager, model_name: str):
                 import traceback
                 traceback.print_exc()
 
+def main():
 
       
     st.markdown("""
@@ -563,65 +563,59 @@ def display_model_management(model_manager, model_name: str):
             </style>
         """, unsafe_allow_html=True)
     
-def main():
-    st.title("AI 감성 분석 서비스")
+    st.title("AI 감성 분석 서비스 ")
     
-    # 로깅 설정
+    # Config 및 모델 관리자 초기화
+    config = Config()
+    model_manager = MLflowModelManager(config)
+
+        # 캐시 무시하고 현재 상태 가져오기
+    selected_model_info = model_manager.load_production_model_info()
+    if not selected_model_info:
+        st.warning("운영 중인 모델이 없습니다. 최신 모델을 사용합니다.")
+        selected_model_info = model_infos[-1]
+    
+    # 로깅 설정 추가
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
+
     
     try:
-        # Config 및 MLflow 초기화
+        # Config 및 모델 관리자 초기화
+        logger.info("애플리케이션 시작")
         config = Config()
-        logger.info("Config 초기화 완료")
+        logger.info("설정 로드 완료")
         
-        # MLflow 설정
-        mlflow.set_tracking_uri("https://upstageailab-ml-pjt-ml-p4-for-deploy.onrender.com")
-        client = MlflowClient()
-        logger.info("MLflow 연결 완료")
+        # MLflow 연결 전 환경 확인
+        if not os.getenv('MLFLOW_TRACKING_URI'):
+            logger.warning("MLflow URI가 설정되지 않음")
+            st.error("MLflow 설정이 필요합니다")
+            return
+            
+        model_manager = MLflowModelManager(config)
+        logger.info("모델 매니저 초기화 완료")
         
-        # 실험 설정
-        experiment = mlflow.get_experiment_by_name("sentiment-analysis")
-        if experiment is None:
-            experiment_id = mlflow.create_experiment("sentiment-analysis")
-        else:
-            experiment_id = experiment.experiment_id
-        
-        # 최신 모델 정보 가져오기
-        runs = client.search_runs(
-            experiment_ids=[experiment_id],
-            order_by=["attributes.start_time DESC"]
-        )
-        
+        # MLflow에서 최신 모델 정보 가져오기
+        runs = model_manager.get_runs()
         if runs:
-            latest_run = runs[0]
-            selected_model_info = {
+            latest_run = runs[0]  # 가장 최신 실행
+            selected_model_info.update({
                 'run_name': latest_run.data.tags.get('mlflow.runName', 'sentiment-model'),
                 'stage': 'production',
                 'version': latest_run.info.run_id,
-                'metrics': latest_run.data.metrics
-            }
-        else:
-            selected_model_info = {
-                'run_name': 'default-sentiment-model',
-                'stage': 'production',
-                'version': '1',
-                'metrics': {'accuracy': 0.0}
-            }
-            
-        # 모델 정보 표시
-        st.markdown(f"**모델명**: {selected_model_info['run_name']}")
-        st.markdown(f"**버전**: {selected_model_info['version']}")
-        if 'accuracy' in selected_model_info['metrics']:
-            st.markdown(f"**정확도**: {selected_model_info['metrics']['accuracy']:.2f}")
-            
+                'metrics': latest_run.data.metrics,
+                'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            })
+        
+        # 메모리 모니터링
+        import psutil
+        process = psutil.Process(os.getpid())
+        logger.info(f"메모리 사용량: {process.memory_info().rss / 1024 / 1024} MB")
+        
     except Exception as e:
-        logger.error(f"애플리케이션 오류: {str(e)}", exc_info=True)
-        st.error("애플리케이션 초기화 중 오류가 발생했습니다.")
-
-if __name__ == "__main__":
-    main()
-
+        logger.error(f"초기화 중 오류 발생: {e}")
+        st.error(f"애플리케이션 초기화 실패: {e}")
+            
     # 탭 생성
     tab_predict, tab_history, tab_manage,tab4 = st.tabs(["예측", "히스토리", "모델 관리","AI 감성 챗봇와 영어공부하기"])
     

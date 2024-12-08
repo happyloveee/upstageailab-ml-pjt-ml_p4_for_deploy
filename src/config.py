@@ -110,8 +110,8 @@ class Config:
     def _setup_mlflow(self):
         """MLflow 설정"""
         mlflow_config = self._config.get("mlflow", {})
-        # 환경 변수에서 tracking_uri 가져오기
-        tracking_uri = os.getenv('MLFLOW_TRACKING_URI', mlflow_config.get("tracking_uri"))
+        # Render의 MLflow 서버 URL 설정
+        tracking_uri = "https://upstageailab-ml-pjt-ml-p4-for-deploy.onrender.com"
         
         self.mlflow = MLflowConfig(
             tracking_uri=tracking_uri,
