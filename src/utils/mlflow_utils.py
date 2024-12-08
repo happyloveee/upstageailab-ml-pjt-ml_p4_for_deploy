@@ -157,21 +157,26 @@ def initialize_mlflow(config: Config) -> str:
     print(f"Debug: Artifact location: {config.mlflow.artifact_location}")
     
     return experiment_id
-
 class MLflowModelManager:
     def __init__(self, config: Config):
         self.config = config
         self.model_info_path = Path(config.mlflow.model_info_path)
         
-        # Render.com MLflow 서버 주소
-        MLFLOW_URI = "https://your-mlflow-service.onrender.com"  # MLflow 서버 URL로 변경
-        mlflow.set_tracking_uri(MLFLOW_URI)
-        self.client = mlflow.tracking.MlflowClient()
-        
-        print(f"Debug: MLflow Model Manager initialized")
-        print(f"Debug: Model info path: {self.model_info_path}")
-        print(f"Debug: Tracking URI: {MLFLOW_URI}")
-        
+        try:
+            # Render.com MLflow 서버 주소
+            MLFLOW_URI = "https://upstageailab-ml-pjt-ml-p4-for-deploy.onrender.com"
+            mlflow.set_tracking_uri(MLFLOW_URI)
+            self.client = mlflow.tracking.MlflowClient()
+            
+            print(f"Debug: MLflow Model Manager initialized")
+            print(f"Debug: Model info path: {self.model_info_path}")
+            print(f"Debug: Tracking URI: {MLFLOW_URI}")
+            
+        except Exception as e:
+            print(f"MLflow 서버 연결 실패: {e}")
+            # 기본값 설정
+            self.client = None
+            
     def register_model(self, model_name: str, run_id: str, model_uri: str = 'model') -> ModelVersion:
         """MLflow에 모델을 등록하고 버전 정보를 반환"""
         # MLflow에 델 등록
