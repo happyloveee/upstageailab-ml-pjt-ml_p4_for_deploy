@@ -30,6 +30,16 @@ import random
 import os # 추가
 import psutil#추가 
 
+
+# 파일 상단에 전역 변수 선언
+selected_model_info = {
+    'run_name': 'default-model',
+    'stage': 'development',
+    'version': '1',
+    'metrics': {'accuracy': 0.0},
+    'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+}
+
 logging.basicConfig(level=logging.INFO)
 
 #추가- 모델 성늠 향상  디바이스 설정
@@ -571,12 +581,7 @@ def main():
     config = Config()
     model_manager = MLflowModelManager(config)
 
-        # 캐시 무시하고 현재 상태 가져오기
-    selected_model_info = model_manager.load_production_model_info()
-    if not selected_model_info:
-        st.warning("운영 중인 모델이 없습니다. 최신 모델을 사용합니다.")
-        selected_model_info = model_infos[-1]
-    
+
     # 로깅 설정 추가
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
@@ -601,12 +606,20 @@ def main():
         model_infos = model_manager.get_model_infos()
         
         # 모델 정보가 있는 경우에만 업데이트
-        if model_infos and len(model_infos) > 0:
-            selected_model_info = model_infos[-1]
-            logger.info(f"최신 모델 정보 로드: {selected_model_info['run_name']}")
-        else:
-            logger.warning("운영 중인 모델이 없습니다. 기본 모델 정보를 사용합니다.")
-            st.warning("운영 중인 모델이 없습니다. 기본 모델을 사용합니다.")
+        # 운영 모델 정보 로드
+        selected_model_info = model_manager.load_production_model_info()
+        if not selected_model_info:
+            if model_infos and len(model_infos) > 0:
+                st.warning("운영 중인 모델이 없습니다. 최신 모델을 사용합니다.")
+                selected_model_info = model_infos[-1]
+            else:
+                st.warning("사용 가능한 모델이 없습니다. 기본 모델을 사용합니다.")
+                
+        logger.info(f"선택된 모델: {selected_model_info['run_name']}")
+            
+    except Exception as e:
+        logger.error(f"모델 정보 로딩 중 오류 발생: {e}")
+        st.error("모델 정보를 불러오는 중 오류가 발생했습니다.")
         
         # 메모리 모니터링
         process = psutil.Process(os.getpid())
