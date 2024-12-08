@@ -1,4 +1,9 @@
-
+# 페이지 설정
+st.set_page_config(
+    page_title="너의 기분은 어때?", #수정
+    page_icon="🤗", #수정 로봇에서 
+    layout="wide"
+)
 from src.config import Config
 from src.utils.mlflow_utils import MLflowModelManager
 from src.inference import SentimentPredictor
@@ -515,12 +520,7 @@ def main():
         st.error("MLflow 초기화에 실패했습니다.")
         return
         
-    # 페이지 설정
-    st.set_page_config(
-        page_title="너의 기분은 어때?", #수정
-        page_icon="🤗", #수정 로봇에서 
-        layout="wide"
-    )
+
     
       
     st.markdown("""
