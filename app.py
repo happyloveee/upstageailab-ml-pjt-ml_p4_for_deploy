@@ -29,7 +29,7 @@ from io import StringIO#추가
 import random
 import os # 추가
 import psutil#추가 
-
+import mlflow
 
 # 파일 상단에 전역 변수 선언
 selected_model_info = {
@@ -586,28 +586,28 @@ def main():
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
     global selected_model_info
-    
-    try:
-        # Config 및 모델 관리자 초기화
-        logger.info("애플리케이션 시작")
-        config = Config()
-        logger.info("설정 로드 완료")
         
+    try:
+        # MLflow 설정
+        mlflow.set_tracking_uri("file:///data/ephemeral/home/upstageailab-ml-pjt-ml_p4_/upstageailab-ml-pjt-ml_p4_for_deploy/mlartifacts")
+        logger.info("MLflow 트래킹 URI 설정 완료")
+        
+        config = Config()
         model_manager = MLflowModelManager(config)
         logger.info("모델 매니저 초기화 완료")
         
-        # 운영 모델 정보 로드 시도
         try:
+            # 로컬 MLflow 아티팩트에서 모델 정보 로드
             temp_model_info = model_manager.load_production_model_info()
             if temp_model_info:
                 selected_model_info.update(temp_model_info)
-                logger.info(f"운영 모델 로드 완료: {selected_model_info['run_name']}")
+                logger.info(f"로컬 모델 로드 성공: {selected_model_info['run_name']}")
             else:
-                logger.warning("운영 중인 모델이 없습니다. 기본 모델 정보를 사용합니다.")
-                st.warning("운영 중인 모델이 없습니다. 기본 모델을 사용합니다.")
+                logger.warning("로컬 MLflow에서 모델을 찾을 수 없습니다.")
+                st.warning("등록된 모델이 없습니다. 기본 모델을 사용합니다.")
         except Exception as model_error:
-            logger.error(f"모델 정보 로드 실패: {model_error}")
-            st.warning("모델 정보를 불러오는데 실패했습니다. 기본 모델을 사용합니다.")
+            logger.error(f"모델 로드 중 오류: {model_error}")
+            st.warning("모델을 불러오는데 실패했습니다. 기본 모델을 사용합니다.")
             
     except Exception as e:
         logger.error(f"초기화 중 오류 발생: {e}")
