@@ -569,29 +569,33 @@ def main():
     config = Config()
     model_manager = MLflowModelManager(config)
     
+    # 로깅 설정 추가
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
     try:
-        # 기본 모델 정보 설정
-        default_model_info = {
-            'run_name': 'default_model',
-            'stage': 'production',
-            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            'metrics': {'val_f1': 0.0},
-            'version': '1'
-        }
+        # Config 및 모델 관리자 초기화
+        logger.info("애플리케이션 시작")
+        config = Config()
+        logger.info("설정 로드 완료")
         
-        # 모델 정보 가져오기
-        model_infos = model_manager.load_model_info()  # get_model_infos 대신 load_model_info 사용
-        
-        if not model_infos:
-            selected_model_info = default_model_info
-            st.warning("사용 가능한 모델이 없습니다. 기본 설정을 사용합니다.")
-        else:
-            selected_model_info = model_infos[-1]  # 최신 모델 선택
+        # MLflow 연결 전 환경 확인
+        if not os.getenv('MLFLOW_TRACKING_URI'):
+            logger.warning("MLflow URI가 설정되지 않음")
+            st.error("MLflow 설정이 필요합니다")
+            return
             
+        model_manager = MLflowModelManager(config)
+        logger.info("모델 매니저 초기화 완료")
+        
+        # 메모리 사용량 모니터링
+        import psutil
+        process = psutil.Process(os.getpid())
+        logger.info(f"메모리 사용량: {process.memory_info().rss / 1024 / 1024} MB")
+        
     except Exception as e:
-        st.error(f"모델 정보를 불러오는 중 오류가 발생했습니다: {e}")
-        selected_model_info = default_model_info
-    
+        logger.error(f"초기화 중 오류 발생: {e}")
+        st.error(f"애플리케이션 초기화 실패: {e}")
     
     # 탭 생성
     tab_predict, tab_history, tab_manage,tab4 = st.tabs(["예측", "히스토리", "모델 관리","AI 감성 챗봇와 영어공부하기"])
