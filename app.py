@@ -569,14 +569,20 @@ def main():
     config = Config()
     model_manager = MLflowModelManager(config)
     
-    # 모델 정보 새로 로딩
-    model_infos = model_manager.load_model_info()
+    try:
+        # 모델 정보 가져오기
+        model_infos = model_manager.get_model_infos()
+        
+        if not model_infos:  # 모델 정보가 없는 경우
+            st.warning("사용 가능한 모델이 없습니다. 기본 설정을 사용합니다.")
+            selected_model_info = {'stage': 'production'}  # 기본 stage 설정
+        else:
+            selected_model_info = model_infos[-1]  # 최신 모델 선택
+            
+    except Exception as e:
+        st.error(f"모델 정보를 불러오는 중 오류가 발생했습니다: {e}")
+        selected_model_info = {'stage': 'production'}  # 기본 stage 설정
     
-    # 캐시 무시하고 현재 상태 가져오기
-    selected_model_info = model_manager.load_production_model_info()
-    if not selected_model_info:
-        st.warning("운영 중인 모델이 없습니다. 최신 모델을 사용합니다.")
-        selected_model_info = model_infos[-1]
     
     # 탭 생성
     tab_predict, tab_history, tab_manage,tab4 = st.tabs(["예측", "히스토리", "모델 관리","AI 감성 챗봇와 영어공부하기"])
