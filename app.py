@@ -607,6 +607,9 @@ def main():
         """, unsafe_allow_html=True)
     
     st.title("AI 감성 분석 서비스 ")
+        # MLflow 초기화 부분 수정
+    os.environ['MLFLOW_TRACKING_URI'] = 'sqlite:///mlflow.db'
+    mlflow.set_tracking_uri('sqlite:///mlflow.db')
     
     # Config 및 모델 관리자 초기화
     config = Config()
