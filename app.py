@@ -1,4 +1,9 @@
 import streamlit as st
+import mlflow   #추가
+from pathlib import Path    #추가
+import os #추가
+from mlflow.exceptions import MlflowException  # 이 줄 추가
+
 # 페이지 설정
 st.set_page_config(
     page_title="너의 기분은 어때?", #수정
@@ -9,8 +14,7 @@ from src.config import Config
 from src.utils.mlflow_utils import MLflowModelManager
 from src.inference import SentimentPredictor
 
-import mlflow   #추가
-import streamlit as st
+
 import pandas as pd
 from datetime import datetime
 import plotly.graph_objects as go
@@ -26,8 +30,8 @@ import streamlit as st
 import csv# 추가
 from io import StringIO#추가
 import random
-import os #추가
-from pathlib import Path    #추가
+
+
 
 
 logging.basicConfig(level=logging.INFO)
@@ -501,11 +505,8 @@ def display_model_management(model_manager, model_name: str):
 def initialize_mlflow():
     """MLflow 초기화"""
     try:
-        import os
-        from pathlib import Path
-        
-        # 프로젝트 루트 디렉토리 경로
-        project_dir = Path(__file__).parent
+        # 프로젝트 루트 디렉토리 경로 (절대 경로 사용)
+        project_dir = Path(__file__).resolve().parent
         
         # mlartifacts 폴더 경로
         artifact_dir = project_dir / "mlartifacts"
@@ -518,11 +519,12 @@ def initialize_mlflow():
         # MLflow 설정
         mlflow.set_tracking_uri(sqlite_uri)
         
-        # 실험이 없으면 생성
-        from mlflow.exceptions import MlflowException
+        # 실험 생성 또는 가져오기
         try:
-            mlflow.get_experiment_by_name("sentiment-analysis")
-        except MlflowException:
+            experiment = mlflow.get_experiment_by_name("sentiment-analysis")
+            if experiment is None:
+                mlflow.create_experiment("sentiment-analysis", artifact_location=str(artifact_dir.absolute()))
+        except MlflowException as e:
             mlflow.create_experiment("sentiment-analysis", artifact_location=str(artifact_dir.absolute()))
         
         mlflow.set_experiment("sentiment-analysis")
