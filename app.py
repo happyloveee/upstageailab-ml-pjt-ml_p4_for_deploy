@@ -585,7 +585,7 @@ def main():
     # 로깅 설정 추가
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
-
+    global selected_model_info
     
     try:
         # Config 및 모델 관리자 초기화
@@ -593,42 +593,26 @@ def main():
         config = Config()
         logger.info("설정 로드 완료")
         
-        # MLflow 연결 전 환경 확인
-        if not os.getenv('MLFLOW_TRACKING_URI'):
-            logger.warning("MLflow URI가 설정되지 않음")
-            st.error("MLflow 설정이 필요합니다")
-            return
-            
         model_manager = MLflowModelManager(config)
         logger.info("모델 매니저 초기화 완료")
         
-        # 모델 정보 가져오기
-        model_infos = model_manager.get_model_infos()
-        
-        # 모델 정보가 있는 경우에만 업데이트
-        # 운영 모델 정보 로드
-        selected_model_info = model_manager.load_production_model_info()
-        if not selected_model_info:
-            if model_infos and len(model_infos) > 0:
-                st.warning("운영 중인 모델이 없습니다. 최신 모델을 사용합니다.")
-                selected_model_info = model_infos[-1]
+        # 운영 모델 정보 로드 시도
+        try:
+            temp_model_info = model_manager.load_production_model_info()
+            if temp_model_info:
+                selected_model_info.update(temp_model_info)
+                logger.info(f"운영 모델 로드 완료: {selected_model_info['run_name']}")
             else:
-                st.warning("사용 가능한 모델이 없습니다. 기본 모델을 사용합니다.")
-                
-        logger.info(f"선택된 모델: {selected_model_info['run_name']}")
+                logger.warning("운영 중인 모델이 없습니다. 기본 모델 정보를 사용합니다.")
+                st.warning("운영 중인 모델이 없습니다. 기본 모델을 사용합니다.")
+        except Exception as model_error:
+            logger.error(f"모델 정보 로드 실패: {model_error}")
+            st.warning("모델 정보를 불러오는데 실패했습니다. 기본 모델을 사용합니다.")
             
     except Exception as e:
-        logger.error(f"모델 정보 로딩 중 오류 발생: {e}")
-        st.error("모델 정보를 불러오는 중 오류가 발생했습니다.")
-        
-        # 메모리 모니터링
-        process = psutil.Process(os.getpid())
-        logger.info(f"메모리 사용량: {process.memory_info().rss / 1024 / 1024} MB")
-        
-    except Exception as e:
         logger.error(f"초기화 중 오류 발생: {e}")
-        st.error(f"애플리케이션 초기화 실패: {e}")
-        return
+        st.error("애플리케이션 초기화에 실패했습니다.")
+    
             
     # 탭 생성
     tab_predict, tab_history, tab_manage,tab4 = st.tabs(["예측", "히스토리", "모델 관리","AI 감성 챗봇와 영어공부하기"])
