@@ -495,17 +495,8 @@ def display_model_management(model_manager, model_name: str):
 def initialize_mlflow():
     """MLflow 초기화"""
     try:
-        # 현재 디렉토리에 mlruns 폴더 사용
-        db_dir = Path.cwd() / "mlruns"
-        db_path = db_dir / "mlflow.db"
-        artifact_dir = db_dir / "mlartifacts"
-        
-        # 디렉토리 생성
-        os.makedirs(db_dir, exist_ok=True)
-        os.makedirs(artifact_dir, exist_ok=True)
-        
-        # SQLite URI 설정
-        sqlite_uri = f"sqlite:///{db_path.absolute()}"
+        # 메모리 기반 SQLite 데이터베이스 사용
+        sqlite_uri = "sqlite:///:memory:"
         
         # MLflow 설정
         mlflow.set_tracking_uri(sqlite_uri)
@@ -517,7 +508,7 @@ def initialize_mlflow():
     except Exception as e:
         st.error(f"MLflow 초기화 실패: {str(e)}")
         return False
-
+    
 def main():
         # MLflow 초기화
     if not initialize_mlflow():
