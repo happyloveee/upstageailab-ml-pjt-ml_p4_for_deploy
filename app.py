@@ -1,20 +1,10 @@
-import streamlit as st
-import mlflow   #추가
-from pathlib import Path    #추가
-import os #추가
-from mlflow.exceptions import MlflowException  # 이 줄 추가
 
-# 페이지 설정
-st.set_page_config(
-    page_title="너의 기분은 어때?", #수정
-    page_icon="🤗", #수정 로봇에서 
-    layout="wide"
-)
 from src.config import Config
 from src.utils.mlflow_utils import MLflowModelManager
 from src.inference import SentimentPredictor
 
 
+import streamlit as st
 import pandas as pd
 from datetime import datetime
 import plotly.graph_objects as go
@@ -30,12 +20,7 @@ import streamlit as st
 import csv# 추가
 from io import StringIO#추가
 import random
-
-
-
-
 logging.basicConfig(level=logging.INFO)
-
 
 #추가- 모델 성늠 향상  디바이스 설정
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -500,49 +485,13 @@ def display_model_management(model_manager, model_name: str):
                 import traceback
                 traceback.print_exc()
 
-
-                
-def initialize_mlflow():
-    """MLflow 초기화"""
-    try:
-        # 프로젝트 루트 디렉토리 경로 (절대 경로 사용)
-        project_dir = Path(__file__).resolve().parent
-        
-        # mlartifacts 폴더 경로
-        artifact_dir = project_dir / "mlartifacts"
-        os.makedirs(artifact_dir, exist_ok=True)
-        
-        # SQLite 데이터베이스 파일 경로
-        db_path = artifact_dir / "mlflow.db"
-        sqlite_uri = f"sqlite:///{db_path.absolute()}"
-        
-        # MLflow 설정
-        mlflow.set_tracking_uri(sqlite_uri)
-        
-        # 실험 생성 또는 가져오기
-        try:
-            experiment = mlflow.get_experiment_by_name("sentiment-analysis")
-            if experiment is None:
-                mlflow.create_experiment("sentiment-analysis", artifact_location=str(artifact_dir.absolute()))
-        except MlflowException as e:
-            mlflow.create_experiment("sentiment-analysis", artifact_location=str(artifact_dir.absolute()))
-        
-        mlflow.set_experiment("sentiment-analysis")
-        
-        st.success("MLflow 초기화 성공!")
-        return True
-        
-    except Exception as e:
-        st.error(f"MLflow 초기화 실패: {str(e)}")
-        return False
-    
 def main():
-        # MLflow 초기화
-    if not initialize_mlflow():
-        st.error("MLflow 초기화에 실패했습니다.")
-        return
-        
-
+    # 페이지 설정
+    st.set_page_config(
+        page_title="너의 기분은 어때?", #수정
+        page_icon="🤗", #수정 로봇에서 
+        layout="wide"
+    )
     
       
     st.markdown("""
@@ -607,9 +556,6 @@ def main():
         """, unsafe_allow_html=True)
     
     st.title("AI 감성 분석 서비스 ")
-        # MLflow 초기화 부분 수정
-    os.environ['MLFLOW_TRACKING_URI'] = 'sqlite:///mlflow.db'
-    mlflow.set_tracking_uri('sqlite:///mlflow.db')
     
     # Config 및 모델 관리자 초기화
     config = Config()

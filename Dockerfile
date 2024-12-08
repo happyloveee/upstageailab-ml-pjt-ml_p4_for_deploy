@@ -124,3 +124,27 @@ RUN chown -R airflow:airflow $AIRFLOW_HOME/src $AIRFLOW_HOME/dags
 USER airflow
 
 CMD ["/init-scripts/init.sh"]
+
+
+
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# 필요한 패키지 설치
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+# 소스 코드 복사
+COPY . .
+
+# MLflow 서버 시작 스크립트
+COPY start.sh .
+RUN chmod +x start.sh
+
+# 포트 설정
+EXPOSE 8501  
+EXPOSE 5050  
+
+# 실행 명령
+CMD ["./start.sh"]

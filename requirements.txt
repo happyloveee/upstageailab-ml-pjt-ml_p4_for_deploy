@@ -1,6 +1,6 @@
 scikit-learn
 
-torch
+torch==2.1.1
 torchvision
 torchaudio
 pytorch-lightning
@@ -12,7 +12,7 @@ pyyaml
 emoji
 
 optuna
-mlflow>=2.0.0
+mlflow
 
 ruff
 black

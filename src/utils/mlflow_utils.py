@@ -160,21 +160,17 @@ def initialize_mlflow(config: Config) -> str:
 
 class MLflowModelManager:
     def __init__(self, config: Config):
-        """MLflow 모델 관리자 초기화
-        
-        Args:
-            config: 설정 객체
-        """
         self.config = config
         self.model_info_path = Path(config.mlflow.model_info_path)
         
-        # MLflow 클라이언트 설정
-        mlflow.set_tracking_uri(config.mlflow.tracking_uri)
+        # Render.com MLflow 서버 주소
+        MLFLOW_URI = "https://your-mlflow-service.onrender.com"  # MLflow 서버 URL로 변경
+        mlflow.set_tracking_uri(MLFLOW_URI)
         self.client = mlflow.tracking.MlflowClient()
         
         print(f"Debug: MLflow Model Manager initialized")
         print(f"Debug: Model info path: {self.model_info_path}")
-        print(f"Debug: Tracking URI: {config.mlflow.tracking_uri}")
+        print(f"Debug: Tracking URI: {MLFLOW_URI}")
         
     def register_model(self, model_name: str, run_id: str, model_uri: str = 'model') -> ModelVersion:
         """MLflow에 모델을 등록하고 버전 정보를 반환"""
