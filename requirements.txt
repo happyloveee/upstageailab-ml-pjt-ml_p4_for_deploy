@@ -33,3 +33,4 @@ streamlit-chat
 transformers
 pandas
 numpy
+psutil>=5.8.0

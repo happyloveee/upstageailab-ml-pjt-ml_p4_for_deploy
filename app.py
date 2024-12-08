@@ -573,29 +573,34 @@ def main():
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
 
+   
     try:
-        # Config 및 모델 관리자 초기화
+        # Config 초기화 전 로깅
         logger.info("애플리케이션 시작")
-        config = Config()
-        logger.info("설정 로드 완료")
         
-        # MLflow 연결 전 환경 확인
-        if not os.getenv('MLFLOW_TRACKING_URI'):
-            logger.warning("MLflow URI가 설정되지 않음")
-            st.error("MLflow 설정이 필요합니다")
+        # Config 초기화
+        config = Config()
+        logger.info("Config 초기화 완료")
+        
+        # MLflow 연결 확인
+        if not config.mlflow.tracking_uri:
+            st.error("MLflow tracking URI가 설정되지 않았습니다.")
             return
             
-        model_manager = MLflowModelManager(config)
-        logger.info("모델 매니저 초기화 완료")
-        
         # 메모리 사용량 모니터링
         import psutil
-        process = psutil.Process(os.getpid())
-        logger.info(f"메모리 사용량: {process.memory_info().rss / 1024 / 1024} MB")
+        memory = psutil.Process().memory_info().rss / 1024 / 1024
+        logger.info(f"메모리 사용량: {memory:.2f} MB")
+        
+        # 나머지 앱 로직
+        st.title("ML 모델 서비스")
         
     except Exception as e:
-        logger.error(f"초기화 중 오류 발생: {e}")
-        st.error(f"애플리케이션 초기화 실패: {e}")
+        logger.error(f"애플리케이션 오류: {str(e)}", exc_info=True)
+        st.error(f"애플리케이션 초기화 중 오류가 발생했습니다: {str(e)}")
+
+if __name__ == "__main__":
+    main()
     
     # 탭 생성
     tab_predict, tab_history, tab_manage,tab4 = st.tabs(["예측", "히스토리", "모델 관리","AI 감성 챗봇와 영어공부하기"])

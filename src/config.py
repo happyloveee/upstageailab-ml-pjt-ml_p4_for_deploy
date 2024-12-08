@@ -32,39 +32,34 @@ class MLflowConfig:
 
 class Config:
     def __init__(self, config_path: str = None):
-        """설정 초기화"""
-        load_dotenv()  # 환경 변수 로드
-        
-        # 환경 변수나 기본값으로 config_path 설정
-        self.config_path = config_path or os.getenv('CONFIG_PATH', "config/config.yaml")
-        
-        # Render 환경 확인
-        self.is_render = os.getenv('RENDER', 'false').lower() == 'true'
-        
         try:
+            load_dotenv()
+            
+            # Render 환경 확인
+            self.is_render = os.getenv('RENDER', 'false').lower() == 'true'
+            
+            # 기본 설정 먼저 로드
+            self._config = self._get_default_config()
+            
             # 프로젝트 루트 설정
             self.project_root = self._find_project_root()
             
-            # 설정 파일 로드
-            config_file = self.project_root / self.config_path
-            if config_file.exists():
-                with open(config_file, 'r', encoding='utf-8') as f:
-                    self._config = yaml.safe_load(f)
-            else:
-                # Render 환경에서는 기본 설정 사용
-                self._config = self._get_default_config()
+            # config 파일이 있으면 로드
+            if config_path:
+                config_file = self.project_root / config_path
+                if config_file.exists():
+                    with open(config_file, 'r', encoding='utf-8') as f:
+                        file_config = yaml.safe_load(f)
+                        self._config.update(file_config)
             
-            # 기본 경로 설정 (Render 환경 고려)
+            # 설정 초기화
             self._setup_paths()
-            
-            # MLflow 설정
             self._setup_mlflow()
-            
-            # 기타 설정
             self._setup_project_config()
+            self._create_directories()
             
         except Exception as e:
-            print(f"설정 초기화 중 오류 발생: {e}")
+            print(f"Config 초기화 오류: {e}")
             raise
 
     def _find_project_root(self) -> Path:
@@ -169,3 +164,11 @@ class Config:
             
             # model_info 디렉토리 생성
             Path(self.mlflow.model_info_path).parent.mkdir(parents=True, exist_ok=True)
+
+    def _check_required_env_vars(self):
+        """필수 환경 변수 확인"""
+        required_vars = ['MLFLOW_TRACKING_URI']
+        missing_vars = [var for var in required_vars if not os.getenv(var)]
+        
+        if missing_vars:
+            raise EnvironmentError(f"Missing required environment variables: {', '.join(missing_vars)}")
