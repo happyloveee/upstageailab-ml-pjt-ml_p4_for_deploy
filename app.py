@@ -570,18 +570,27 @@ def main():
     model_manager = MLflowModelManager(config)
     
     try:
-        # 모델 정보 가져오기
-        model_infos = model_manager.get_model_infos()
+        # 기본 모델 정보 설정
+        default_model_info = {
+            'run_name': 'default_model',
+            'stage': 'production',
+            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            'metrics': {'val_f1': 0.0},
+            'version': '1'
+        }
         
-        if not model_infos:  # 모델 정보가 없는 경우
+        # 모델 정보 가져오기
+        model_infos = model_manager.load_model_info()  # get_model_infos 대신 load_model_info 사용
+        
+        if not model_infos:
+            selected_model_info = default_model_info
             st.warning("사용 가능한 모델이 없습니다. 기본 설정을 사용합니다.")
-            selected_model_info = {'stage': 'production'}  # 기본 stage 설정
         else:
             selected_model_info = model_infos[-1]  # 최신 모델 선택
             
     except Exception as e:
         st.error(f"모델 정보를 불러오는 중 오류가 발생했습니다: {e}")
-        selected_model_info = {'stage': 'production'}  # 기본 stage 설정
+        selected_model_info = default_model_info
     
     
     # 탭 생성
