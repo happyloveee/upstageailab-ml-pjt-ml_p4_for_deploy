@@ -500,19 +500,30 @@ def display_model_management(model_manager, model_name: str):
 def initialize_mlflow():
     """MLflow 초기화"""
     try:
-        # 메모리 기반 SQLite 데이터베이스 사용
-        sqlite_uri = "sqlite:///:memory:"
+        import os
+        from pathlib import Path
+        
+        # 프로젝트 루트 디렉토리 경로
+        project_dir = Path(__file__).parent
+        
+        # mlartifacts 폴더 경로
+        artifact_dir = project_dir / "mlartifacts"
+        os.makedirs(artifact_dir, exist_ok=True)
+        
+        # SQLite 데이터베이스 파일 경로
+        db_path = artifact_dir / "mlflow.db"
+        sqlite_uri = f"sqlite:///{db_path.absolute()}"
         
         # MLflow 설정
         mlflow.set_tracking_uri(sqlite_uri)
         
-        # 데이터베이스 초기화
-        from mlflow.store.tracking.sqlalchemy_store import SqlAlchemyStore
-        store = SqlAlchemyStore(sqlite_uri)
-        store._initialize_tables()
+        # 실험이 없으면 생성
+        from mlflow.exceptions import MlflowException
+        try:
+            mlflow.get_experiment_by_name("sentiment-analysis")
+        except MlflowException:
+            mlflow.create_experiment("sentiment-analysis", artifact_location=str(artifact_dir.absolute()))
         
-        # 실험 생성
-        mlflow.create_experiment("sentiment-analysis")
         mlflow.set_experiment("sentiment-analysis")
         
         st.success("MLflow 초기화 성공!")
