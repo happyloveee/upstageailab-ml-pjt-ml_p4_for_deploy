@@ -28,6 +28,8 @@ import csv# 추가
 from io import StringIO#추가
 import random
 import os # 추가
+import psutil#추가 
+
 logging.basicConfig(level=logging.INFO)
 
 #추가- 모델 성늠 향상  디바이스 설정
@@ -595,26 +597,25 @@ def main():
         model_manager = MLflowModelManager(config)
         logger.info("모델 매니저 초기화 완료")
         
-        # MLflow에서 최신 모델 정보 가져오기
-        runs = model_manager.get_runs()
-        if runs:
-            latest_run = runs[0]  # 가장 최신 실행
-            selected_model_info.update({
-                'run_name': latest_run.data.tags.get('mlflow.runName', 'sentiment-model'),
-                'stage': 'production',
-                'version': latest_run.info.run_id,
-                'metrics': latest_run.data.metrics,
-                'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            })
+        # 모델 정보 가져오기
+        model_infos = model_manager.get_model_infos()
+        
+        # 모델 정보가 있는 경우에만 업데이트
+        if model_infos and len(model_infos) > 0:
+            selected_model_info = model_infos[-1]
+            logger.info(f"최신 모델 정보 로드: {selected_model_info['run_name']}")
+        else:
+            logger.warning("운영 중인 모델이 없습니다. 기본 모델 정보를 사용합니다.")
+            st.warning("운영 중인 모델이 없습니다. 기본 모델을 사용합니다.")
         
         # 메모리 모니터링
-        import psutil
         process = psutil.Process(os.getpid())
         logger.info(f"메모리 사용량: {process.memory_info().rss / 1024 / 1024} MB")
         
     except Exception as e:
         logger.error(f"초기화 중 오류 발생: {e}")
         st.error(f"애플리케이션 초기화 실패: {e}")
+        return
             
     # 탭 생성
     tab_predict, tab_history, tab_manage,tab4 = st.tabs(["예측", "히스토리", "모델 관리","AI 감성 챗봇와 영어공부하기"])
