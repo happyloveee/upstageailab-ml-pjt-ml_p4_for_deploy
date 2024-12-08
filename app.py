@@ -11,7 +11,8 @@ from src.utils.mlflow_utils import MLflowModelManager
 from src.inference import SentimentPredictor
 
 
-
+import mlflow
+from mlflow.tracking import MlflowClient
 import pandas as pd
 from datetime import datetime
 import plotly.graph_objects as go
@@ -499,7 +500,6 @@ def display_model_management(model_manager, model_name: str):
                 import traceback
                 traceback.print_exc()
 
-def main():
 
       
     st.markdown("""
@@ -563,45 +563,65 @@ def main():
             </style>
         """, unsafe_allow_html=True)
     
-    st.title("AI 감성 분석 서비스 ")
+def main():
+    st.title("AI 감성 분석 서비스")
     
-    # Config 및 모델 관리자 초기화
-    config = Config()
-    model_manager = MLflowModelManager(config)
-    
-    # 로깅 설정 추가
+    # 로깅 설정
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
-
-   
+    
     try:
-        # Config 초기화 전 로깅
-        logger.info("애플리케이션 시작")
-        
-        # Config 초기화
+        # Config 및 MLflow 초기화
         config = Config()
         logger.info("Config 초기화 완료")
         
-        # MLflow 연결 확인
-        if not config.mlflow.tracking_uri:
-            st.error("MLflow tracking URI가 설정되지 않았습니다.")
-            return
+        # MLflow 설정
+        mlflow.set_tracking_uri("https://upstageailab-ml-pjt-ml-p4-for-deploy.onrender.com")
+        client = MlflowClient()
+        logger.info("MLflow 연결 완료")
+        
+        # 실험 설정
+        experiment = mlflow.get_experiment_by_name("sentiment-analysis")
+        if experiment is None:
+            experiment_id = mlflow.create_experiment("sentiment-analysis")
+        else:
+            experiment_id = experiment.experiment_id
+        
+        # 최신 모델 정보 가져오기
+        runs = client.search_runs(
+            experiment_ids=[experiment_id],
+            order_by=["attributes.start_time DESC"]
+        )
+        
+        if runs:
+            latest_run = runs[0]
+            selected_model_info = {
+                'run_name': latest_run.data.tags.get('mlflow.runName', 'sentiment-model'),
+                'stage': 'production',
+                'version': latest_run.info.run_id,
+                'metrics': latest_run.data.metrics
+            }
+        else:
+            selected_model_info = {
+                'run_name': 'default-sentiment-model',
+                'stage': 'production',
+                'version': '1',
+                'metrics': {'accuracy': 0.0}
+            }
             
-        # 메모리 사용량 모니터링
-        import psutil
-        memory = psutil.Process().memory_info().rss / 1024 / 1024
-        logger.info(f"메모리 사용량: {memory:.2f} MB")
-        
-        # 나머지 앱 로직
-        st.title("ML 모델 서비스")
-        
+        # 모델 정보 표시
+        st.markdown(f"**모델명**: {selected_model_info['run_name']}")
+        st.markdown(f"**버전**: {selected_model_info['version']}")
+        if 'accuracy' in selected_model_info['metrics']:
+            st.markdown(f"**정확도**: {selected_model_info['metrics']['accuracy']:.2f}")
+            
     except Exception as e:
         logger.error(f"애플리케이션 오류: {str(e)}", exc_info=True)
-        st.error(f"애플리케이션 초기화 중 오류가 발생했습니다: {str(e)}")
+        st.error("애플리케이션 초기화 중 오류가 발생했습니다.")
 
 if __name__ == "__main__":
     main()
-    
+
     # 탭 생성
     tab_predict, tab_history, tab_manage,tab4 = st.tabs(["예측", "히스토리", "모델 관리","AI 감성 챗봇와 영어공부하기"])
     
