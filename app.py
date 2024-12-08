@@ -1,3 +1,4 @@
+import streamlit as st
 # 페이지 설정
 st.set_page_config(
     page_title="너의 기분은 어때?", #수정
