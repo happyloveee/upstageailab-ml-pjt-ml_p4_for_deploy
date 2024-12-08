@@ -1,10 +1,17 @@
-
+import streamlit as st
+# 페이지 설정
+st.set_page_config(
+    page_title="너의 기분은 어때?", #수정
+    page_icon="🤗", #수정 로봇에서 
+    layout="wide"
+)
+    
 from src.config import Config
 from src.utils.mlflow_utils import MLflowModelManager
 from src.inference import SentimentPredictor
 
 
-import streamlit as st
+
 import pandas as pd
 from datetime import datetime
 import plotly.graph_objects as go
@@ -20,6 +27,7 @@ import streamlit as st
 import csv# 추가
 from io import StringIO#추가
 import random
+import os # 추가
 logging.basicConfig(level=logging.INFO)
 
 #추가- 모델 성늠 향상  디바이스 설정
@@ -29,11 +37,17 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # API_URL = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill"
 # headers = {"Authorization": f"Bearer {st.secrets['HUGGINGFACE_TOKEN']}"}
 
-try:
-    API_URL = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill"
-    headers = {"Authorization": f"Bearer {st.secrets['HUGGINGFACE_TOKEN']}"}
-except Exception as e:
-    st.error("Hugging Face API 토큰이 설정되지 않았습니다. Streamlit Cloud의 Settings에서 'HUGGINGFACE_TOKEN'을 설정해주세요.")
+
+
+API_URL = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill"
+
+# 환경 변수에서 토큰 가져오기
+huggingface_token = os.getenv('HUGGINGFACE_TOKEN')
+
+if huggingface_token:
+    headers = {"Authorization": f"Bearer {huggingface_token}"}
+else:
+    st.error("Hugging Face API 토큰이 설정되지 않았습니다. Render.com의 Environment Variables에서 'HUGGINGFACE_TOKEN'을 설정해주세요.")
     headers = {"Authorization": "Bearer "}
 
 
@@ -486,13 +500,7 @@ def display_model_management(model_manager, model_name: str):
                 traceback.print_exc()
 
 def main():
-    # 페이지 설정
-    st.set_page_config(
-        page_title="너의 기분은 어때?", #수정
-        page_icon="🤗", #수정 로봇에서 
-        layout="wide"
-    )
-    
+
       
     st.markdown("""
          <style>
