@@ -505,6 +505,14 @@ def initialize_mlflow():
         
         # MLflow 설정
         mlflow.set_tracking_uri(sqlite_uri)
+        
+        # 데이터베이스 초기화
+        from mlflow.store.tracking.sqlalchemy_store import SqlAlchemyStore
+        store = SqlAlchemyStore(sqlite_uri)
+        store._initialize_tables()
+        
+        # 실험 생성
+        mlflow.create_experiment("sentiment-analysis")
         mlflow.set_experiment("sentiment-analysis")
         
         st.success("MLflow 초기화 성공!")
