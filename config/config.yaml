@@ -1,7 +1,12 @@
 # MLflow 설정
-mlflow:
-  tracking_uri: "http://127.0.0.1:5050"
-  experiment_name: "ml4_sentiment_analysis"
+
+mlflow: #수정
+  tracking_uri: "sqlite:///data/ephemeral/mlflow.db"
+  artifact_location: "/data/ephemeral/mlartifacts"
+  experiment_name: "sentiment-analysis"
+# mlflow:
+#   tracking_uri: "http://127.0.0.1:5050"
+#   experiment_name: "ml4_sentiment_analysis"
   model_registry_metric_threshold: 0.3
   mlrun_path: "mlruns"
   backend_store_uri: "mlruns"

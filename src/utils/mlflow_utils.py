@@ -70,64 +70,64 @@ def cleanup_artifacts(config, metrics: Dict[str, float], run_id: str):
     except Exception as e:
         print(f"Error cleaning up artifacts: {str(e)}")
 
-def setup_mlflow_server(config: Config, reset_experiments: bool = False):
-    """MLflow 서버 설정
+# def setup_mlflow_server(config: Config, reset_experiments: bool = False):
+#     """MLflow 서버 설정
     
-    Args:
-        config: 설정 객체
-        reset_experiments: MLflow 실험 데이터 초기화 여부 (기본값: False)
-    """
-    # 절대 경로 사용
-    root_dir = Path.cwd().resolve()
+#     Args:
+#         config: 설정 객체
+#         reset_experiments: MLflow 실험 데이터 초기화 여부 (기본값: False)
+#     """
+#     # 절대 경로 사용
+#     root_dir = Path.cwd().resolve()
     
-    # MLflow 디렉토리 초기화
-    mlruns_dir = root_dir / 'mlruns'
-    mlartifacts_dir = root_dir / 'mlartifacts'
-    trash_dir = mlruns_dir / ".trash"
+#     # MLflow 디렉토리 초기화
+#     mlruns_dir = root_dir / 'mlruns'
+#     mlartifacts_dir = root_dir / 'mlartifacts'
+#     trash_dir = mlruns_dir / ".trash"
     
-    print(f"\nDebug: Setting up MLflow directories:")
-    print(f"Root dir: {root_dir}")
-    print(f"MLruns dir: {mlruns_dir}")
-    print(f"Artifacts dir: {mlartifacts_dir}")
+#     print(f"\nDebug: Setting up MLflow directories:")
+#     print(f"Root dir: {root_dir}")
+#     print(f"MLruns dir: {mlruns_dir}")
+#     print(f"Artifacts dir: {mlartifacts_dir}")
     
-    # 실험 데이터 초기화 (선택적)
-    if reset_experiments:
-        print("Resetting MLflow experiments...")
-        if mlruns_dir.exists():
-            shutil.rmtree(mlruns_dir)
-        if mlartifacts_dir.exists():
-            shutil.rmtree(mlartifacts_dir)
+#     # 실험 데이터 초기화 (선택적)
+#     if reset_experiments:
+#         print("Resetting MLflow experiments...")
+#         if mlruns_dir.exists():
+#             shutil.rmtree(mlruns_dir)
+#         if mlartifacts_dir.exists():
+#             shutil.rmtree(mlartifacts_dir)
     
-    # 디렉토리 생성
-    mlruns_dir.mkdir(parents=True, exist_ok=True)
-    mlartifacts_dir.mkdir(parents=True, exist_ok=True)
-    trash_dir.mkdir(parents=True, exist_ok=True)
+#     # 디렉토리 생성
+#     mlruns_dir.mkdir(parents=True, exist_ok=True)
+#     mlartifacts_dir.mkdir(parents=True, exist_ok=True)
+#     trash_dir.mkdir(parents=True, exist_ok=True)
     
-    # MLflow 설정
-    registry_uri = f"file://{mlruns_dir}"
-    os.environ['MLFLOW_TRACKING_URI'] = config.mlflow.tracking_uri
-    os.environ['MLFLOW_REGISTRY_URI'] = registry_uri
+#     # MLflow 설정
+#     registry_uri = f"file://{mlruns_dir}"
+#     os.environ['MLFLOW_TRACKING_URI'] = config.mlflow.tracking_uri
+#     os.environ['MLFLOW_REGISTRY_URI'] = registry_uri
     
-    mlflow.set_tracking_uri(config.mlflow.tracking_uri)
-    mlflow.set_registry_uri(registry_uri)
+#     mlflow.set_tracking_uri(config.mlflow.tracking_uri)
+#     mlflow.set_registry_uri(registry_uri)
     
-    print(f"\nDebug: MLflow Configuration:")
-    print(f"Tracking URI: {mlflow.get_tracking_uri()}")
-    print(f"Registry URI: {mlflow.get_registry_uri()}")
+#     print(f"\nDebug: MLflow Configuration:")
+#     print(f"Tracking URI: {mlflow.get_tracking_uri()}")
+#     print(f"Registry URI: {mlflow.get_registry_uri()}")
     
-    # 모델 레지스트리 초기화 (선택적)
-    if reset_experiments:
-        client = MlflowClient()
-        try:
-            registered_models = client.search_registered_models()
-            for model in registered_models:
-                client.delete_registered_model(model.name)
-        except:
-            pass
+#     # 모델 레지스트리 초기화 (선택적)
+#     if reset_experiments:
+#         client = MlflowClient()
+#         try:
+#             registered_models = client.search_registered_models()
+#             for model in registered_models:
+#                 client.delete_registered_model(model.name)
+#         except:
+#             pass
     
-    print(f"Debug: MLflow environment initialized")
-    print(f"Debug: MLflow metadata directory: {mlruns_dir}")
-    print(f"Debug: MLflow artifacts directory: {mlartifacts_dir}")
+#     print(f"Debug: MLflow environment initialized")
+#     print(f"Debug: MLflow metadata directory: {mlruns_dir}")
+#     print(f"Debug: MLflow artifacts directory: {mlartifacts_dir}")
 
 def initialize_mlflow(config: Config) -> str:
     """MLflow 초기화 및 설정

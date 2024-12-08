@@ -2,9 +2,8 @@
 from src.config import Config
 from src.utils.mlflow_utils import MLflowModelManager
 from src.inference import SentimentPredictor
-import subprocess
 
-
+import mlflow   #추가
 import streamlit as st
 import pandas as pd
 from datetime import datetime
@@ -21,7 +20,9 @@ import streamlit as st
 import csv# 추가
 from io import StringIO#추가
 import random
+import os #추가
 logging.basicConfig(level=logging.INFO)
+
 
 #추가- 모델 성늠 향상  디바이스 설정
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -37,22 +38,7 @@ except Exception as e:
     st.error("Hugging Face API 토큰이 설정되지 않았습니다. Streamlit Cloud의 Settings에서 'HUGGINGFACE_TOKEN'을 설정해주세요.")
     headers = {"Authorization": "Bearer "}
 
-#추가 
-def start_mlflow_server(config):
-    """MLflow 서버 시작"""
-    mlflow_command = [
-        "mlflow", "server",
-        "--backend-store-uri", f"sqlite:///{config.mlflow.backend_store_uri}",
-        "--default-artifact-root", f"{config.mlflow.artifact_location}",
-        "--host", "0.0.0.0",
-        "--port", "5050"  # 5000에서 5050으로 변경
-    ]
-    subprocess.Popen(mlflow_command)
 
-    # 앱 시작시 MLflow 서버 실행
-if 'mlflow_server_started' not in st.session_state:
-    start_mlflow_server()
-    st.session_state.mlflow_server_started = True
 
 
 #Part 2/4 - 유틸리티 함수들:
@@ -501,7 +487,31 @@ def display_model_management(model_manager, model_name: str):
                 import traceback
                 traceback.print_exc()
 
+
+                
+def initialize_mlflow():
+    """MLflow 초기화"""
+    try:
+        config = Config()
+        
+        # MLflow 설정
+        mlflow.set_tracking_uri(config.mlflow.tracking_uri)
+        mlflow.set_experiment(config.mlflow.experiment_name)
+        
+        # 디렉토리 생성
+        os.makedirs("/data/ephemeral/mlartifacts", exist_ok=True)
+        
+        return True
+    except Exception as e:
+        st.error(f"MLflow 초기화 실패: {str(e)}")
+        return False
+
 def main():
+        # MLflow 초기화
+    if not initialize_mlflow():
+        st.error("MLflow 초기화에 실패했습니다.")
+        return
+        
     # 페이지 설정
     st.set_page_config(
         page_title="너의 기분은 어때?", #수정
